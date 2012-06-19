@@ -43,7 +43,7 @@ class InvitationTestCase(TestCase):
                                                     email='alice@example.com')
         self.sample_key = InvitationKey.objects.create_invitation(user=self.sample_user)
         self.expired_key = InvitationKey.objects.create_invitation(user=self.sample_user)
-        self.expired_key.date_invited -= datetime.timedelta(days=settings.ACCOUNT_INVITATION_DAYS + 1)
+        self.expired_key.date_invited -= datetime.timedelta(days=settings.INVITATION_INVITE_LIFETIME + 1)
         self.expired_key.save()
 
         self.sample_registration_data = {
@@ -117,21 +117,21 @@ class InvitationModelTests(InvitationTestCase):
         """Test InvitationUser calculates remaining invitations properly."""
         remaining_invites = InvitationKey.objects.remaining_invitations_for_user
 
-        # New user starts with settings.INVITATIONS_PER_USER
+        # New user starts with settings.INVITATION_INVITES_PER_USER
         user = User.objects.create_user(username='newbie',
                                         password='secret',
                                         email='newbie@example.com')
-        self.assertEqual(remaining_invites(user), settings.INVITATIONS_PER_USER)
+        self.assertEqual(remaining_invites(user), settings.INVITATION_INVITES_PER_USER)
 
         # After using some, amount remaining is decreased
         used = InvitationKey.objects.filter(from_user=self.sample_user).count()
-        expected_remaining = settings.INVITATIONS_PER_USER - used
+        expected_remaining = settings.INVITATION_INVITES_PER_USER - used
         remaining = remaining_invites(self.sample_user)
         self.assertEqual(remaining, expected_remaining)
 
         # Using Invitationuser via Admin, remaining can be increased
         invitation_user = InvitationUser.objects.get(inviter=self.sample_user)
-        new_remaining = 2*settings.INVITATIONS_PER_USER + 1
+        new_remaining = 2*settings.INVITATION_INVITES_PER_USER + 1
         invitation_user.invitations_remaining = new_remaining
         invitation_user.save()
         remaining = remaining_invites(self.sample_user)
@@ -144,7 +144,7 @@ class InvitationModelTests(InvitationTestCase):
         old_sample_user.invitationuser_set.all().delete()
         self.assertEqual(old_sample_user.invitationuser_set.count(), 0)
         remaining = remaining_invites(old_sample_user)
-        self.assertEqual(remaining, settings.INVITATIONS_PER_USER)
+        self.assertEqual(remaining, settings.INVITATION_INVITES_PER_USER)
 
 
 class InvitationFormTests(InvitationTestCase):

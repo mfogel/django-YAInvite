@@ -1,5 +1,5 @@
-from setuptools import setup, find_packages
- 
+from setuptools import setup
+
 setup(
     name='django-invitation',
     version='1.0',
@@ -7,7 +7,7 @@ setup(
     author='David Larlet',
     author_email='david@larlet.fr',
     url='http://code.welldev.org/django-invitation/',
-    packages=find_packages(),
+    packages=['appconf'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',

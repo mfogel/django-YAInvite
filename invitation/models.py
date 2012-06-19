@@ -11,6 +11,9 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.hashcompat import sha_constructor
 
+# ensure our default settings get loaded
+from invitation.conf import InvitationConf
+
 
 # from django-registration
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
@@ -57,7 +60,8 @@ class InvitationKeyManager(models.Manager):
         """
         invitation_user, created = InvitationUser.objects.get_or_create(
             inviter=user,
-            defaults={'invitations_remaining': getattr(settings, 'INVITATIONS_PER_USER', 0)})
+            defaults={'invitations_remaining': settings.INVITATION_INVITES_PER_USER},
+        )
         return invitation_user.invitations_remaining
 
     def delete_expired_keys(self):
@@ -98,7 +102,7 @@ class InvitationKey(models.Model):
         current date, the key has expired and this method returns ``True``.
 
         """
-        expiration_date = datetime.timedelta(days=getattr(settings, 'ACCOUNT_INVITATION_DAYS', 7))
+        expiration_date = datetime.timedelta(days=settings.INVITATION_INVITE_LIFETIME)
         return self.date_invited + expiration_date <= timezone.now()
     key_expired.boolean = True
 
@@ -123,7 +127,7 @@ class InvitationKey(models.Model):
 
         message = render_to_string('invitation/email/body.txt',
                                    { 'invitation_key': self,
-                                     'expiration_days': getattr(settings, 'ACCOUNT_INVITATION_DAYS', 7),
+                                     'expiration_days': settings.INVITATION_INVITE_LIFETIME,
                                      'site': current_site })
 
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
@@ -142,7 +146,7 @@ def user_post_save(sender, instance, created, **kwargs):
     if created:
         invitation_user = InvitationUser()
         invitation_user.inviter = instance
-        invitation_user.invitations_remaining = getattr(settings, 'INVITATIONS_PER_USER', 0)
+        invitation_user.invitations_remaining = settings.INVITATION_INVITES_PER_USER
         invitation_user.save()
 
 models.signals.post_save.connect(user_post_save, sender=User)

@@ -1,46 +1,45 @@
-from django.views.generic.simple import direct_to_template
-from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.decorators import login_required
+from django.views.generic import TemplateView, FormView
 
 from invitation.models import InvitationKey
 from invitation.forms import InvitationKeyForm
 
-is_key_valid = InvitationKey.objects.is_key_valid
-remaining_invitations_for_user = InvitationKey.objects.remaining_invitations_for_user
+
+class SendInviteView(FormView):
+    "Send an invite"
+    form_class = InvitationKeyForm
+    template_name='invitation/send.html'
+    success_url = reverse_lazy('invitation_sent')
+
+    def get_context_data(self, **kwargs):
+        context = super(SendInviteView, self).get_context_data(**kwargs)
+        context['remaining_invitations'] = (
+            InvitationKey.objects.remaining_invitations_for_user(self.request.user)
+        )
+        return context
+
+    def form_valid(self, form):
+        "Send the invite"
+        invitation = InvitationKey.objects.create_invitation(self.request.user)
+        invitation.send_to(form.cleaned_data['email'])
+        return super(SendInviteView, self).form_valid(form)
 
 
-def invited(request, invitation_key=None, extra_context=None):
-    if invitation_key and is_key_valid(invitation_key):
-        template_name = 'invitation/invited.html'
-    else:
-        template_name = 'invitation/wrong_invitation_key.html'
-    extra_context = extra_context is not None and extra_context.copy() or {}
-    extra_context.update({'invitation_key': invitation_key})
-    return direct_to_template(request, template_name, extra_context)
+class InviteSentView(TemplateView):
+    "Invite successfully sent - success page"
+    template_name = 'invitation/sent.html'
 
 
-def invite(request, success_url=None,
-            form_class=InvitationKeyForm,
-            template_name='invitation/invitation_form.html',
-            extra_context=None):
-    extra_context = extra_context is not None and extra_context.copy() or {}
-    remaining_invitations = remaining_invitations_for_user(request.user)
-    if request.method == 'POST':
-        form = form_class(data=request.POST, files=request.FILES)
-        if remaining_invitations > 0 and form.is_valid():
-            invitation = InvitationKey.objects.create_invitation(request.user)
-            invitation.send_to(form.cleaned_data["email"])
-            # success_url needs to be dynamically generated here; setting a
-            # a default value using reverse() will cause circular-import
-            # problems with the default URLConf for this application, which
-            # imports this file.
-            return HttpResponseRedirect(success_url or reverse('invitation_complete'))
-    else:
-        form = form_class()
-    extra_context.update({
-            'form': form,
-            'remaining_invitations': remaining_invitations,
+class RedeemInviteView(TemplateView):
+    "Redeem an invite"
+    template_name = 'invitation/redeem.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(RedeemInviteView, self).get_context_data(**kwargs)
+        invitation_key = self.kwargs.get('invitation_key')
+        context.update({
+            'invitation_key': invitation_key,
+            'is_valid': InvitationKey.objects.is_key_valid(invitation_key),
         })
-    return direct_to_template(request, template_name, extra_context)
-invite = login_required(invite)
+        return context

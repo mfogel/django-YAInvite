@@ -1,0 +1,11 @@
+{% extends 'invitation/base.html' %}
+
+{% block invitation_content %}
+
+<h2>Redeem your invitation</h2>
+
+<p>
+{{ is_valid|yesno:'Valid,Invalid' }} invitation key: <strong>{{ invitation_key }}</strong>
+</p>
+
+{% endblock %}

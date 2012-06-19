@@ -1,0 +1,21 @@
+{% extends 'invitation/base.html' %}
+
+{% block invitation_content %}
+
+<h2>Invite a friend</h2>
+
+<p>
+You have {{ remaining_invitations }} invitation{{ remaining_invitations|pluralize }} remaining to send.
+</p>
+
+{% if remaining_invitations > 0 %}
+<form method="POST">
+    {% csrf_token %}
+    <table>
+        {{ form.as_table }}
+    </table>
+    <input type="submit" value="Send Invitation" />
+</form>
+{% endif %}
+
+{% endblock %}

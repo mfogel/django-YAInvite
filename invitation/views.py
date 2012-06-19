@@ -4,9 +4,9 @@ from django.core.urlresolvers import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, FormView
 
-from invitation.backends import get_backend
-from invitation.models import Invite
-from invitation.forms import SendInviteForm
+from .backends import get_backend
+from .models import Invite
+from .forms import SendInviteForm
 
 
 class LoginRequiredMixin(object):

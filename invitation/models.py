@@ -13,7 +13,7 @@ from django.utils.formats import localize
 from django.utils.hashcompat import sha_constructor
 
 # ensure our default settings get loaded
-from invitation.conf import InvitationConf
+from .conf import InvitationConf
 
 
 # from django-registration

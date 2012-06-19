@@ -1,7 +1,6 @@
 # ConfApp recommends importing settings in this file, doesn't say why
 # https://github.com/jezdez/django-appconf/blob/develop/README.rst
 from django.conf import settings
-
 from appconf import AppConf
 
 

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from invitation.models import Invite
+from .models import Invite
 
 class InviteAdmin(admin.ModelAdmin):
     list_display = ('__unicode__', 'invitor', 'invited', 'is_expired', 'is_redeemed')

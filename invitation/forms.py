@@ -1,4 +1,5 @@
 from django import forms
 
-class InvitationKeyForm(forms.Form):
+class SendInviteForm(forms.Form):
+    "Form to send an invite"
     email = forms.EmailField()

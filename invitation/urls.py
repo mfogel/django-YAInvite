@@ -1,6 +1,9 @@
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import patterns, url
 
-from invitation.views import SendInviteView, InviteSentView, RedeemInviteView
+from invitation.views import (
+        SendInviteView, InviteSentView,
+        RedeemInviteView, InviteRedeemedView)
+
 
 urlpatterns = patterns('',
     url(r'^send/$',
@@ -14,5 +17,9 @@ urlpatterns = patterns('',
     url(r'^redeem/(?P<invitation_key>\w+)/$',
         RedeemInviteView.as_view(),
         name='invitation_redeem'
+    ),
+    url(r'^redeemed/(?P<invitation_key>\w+)/$',
+        InviteRedeemedView.as_view(),
+        name='invitation_redeemed'
     ),
 )

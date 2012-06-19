@@ -8,4 +8,15 @@
 {{ is_valid|yesno:'Valid,Invalid' }} invitation key: <strong>{{ invitation_key }}</strong>
 </p>
 
+{% if is_valid %}
+<form method="POST">
+    {% csrf_token %}
+    <table>
+        {{ form.as_table }}
+    </table>
+    <input type="submit" value="Sign Up!" />
+</form>
+{% endif %}
+
+
 {% endblock %}

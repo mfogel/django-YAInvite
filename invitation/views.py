@@ -1,10 +1,11 @@
-from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+from django.core.urlresolvers import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, FormView
 
 from invitation.models import InvitationKey
-from invitation.forms import InvitationKeyForm
+from invitation.forms import SendInviteForm
 
 
 class LoginRequiredMixin(object):
@@ -16,7 +17,7 @@ class LoginRequiredMixin(object):
 
 class SendInviteView(LoginRequiredMixin, FormView):
     "Send an invite"
-    form_class = InvitationKeyForm
+    form_class = SendInviteForm
     template_name = 'invitation/send.html'
     success_url = reverse_lazy('invitation_sent')
 
@@ -39,15 +40,38 @@ class InviteSentView(LoginRequiredMixin, TemplateView):
     template_name = 'invitation/sent.html'
 
 
-class RedeemInviteView(TemplateView):
+class RedeemInviteView(FormView):
     "Redeem an invite"
+    form_class = UserCreationForm
     template_name = 'invitation/redeem.html'
+    success_url = reverse_lazy('invitation_redeemed')
+
+    @property
+    def invitation_key(self):
+        return self.kwargs.get('invitation_key')
+
+    @property
+    def is_key_valid(self):
+        return InvitationKey.objects.is_key_valid(self.invitation_key)
 
     def get_context_data(self, **kwargs):
         context = super(RedeemInviteView, self).get_context_data(**kwargs)
-        invitation_key = self.kwargs.get('invitation_key')
         context.update({
-            'invitation_key': invitation_key,
-            'is_valid': InvitationKey.objects.is_key_valid(invitation_key),
+            'invitation_key': self.invitation_key,
+            'is_valid': self.is_key_valid,
         })
         return context
+
+    def form_valid(self, form):
+        "Redeem the invite"
+        if not self.is_key_valid:
+            return super(RedeemInviteView, self).form_invalid(form)
+        new_user = form.save()
+        invitation = InvitationKey.objects.get(key=self.invitation_key)
+        invitation.mark_used(new_user)
+        return super(RedeemInviteView, self).form_valid(form)
+
+
+class InviteRedeemedView(TemplateView):
+    "Invite successfully redeemed - success page"
+    template_name = 'invitation/redeemed.html'

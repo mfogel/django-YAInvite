@@ -7,7 +7,8 @@ setup(
     author='David Larlet',
     author_email='david@larlet.fr',
     url='http://code.welldev.org/django-invitation/',
-    packages=['appconf'],
+    packages=['invitation'],
+    install_requires=['django', 'South', 'django-appconf'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',

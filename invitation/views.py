@@ -4,7 +4,8 @@ from django.core.urlresolvers import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, FormView
 
-from invitation.models import InvitationKey
+from invitation.backends import get_backend
+from invitation.models import Invite
 from invitation.forms import SendInviteForm
 
 
@@ -21,17 +22,21 @@ class SendInviteView(LoginRequiredMixin, FormView):
     template_name = 'invitation/send.html'
     success_url = reverse_lazy('invitation_sent')
 
+    def dispatch(self, request, *args, **kwargs):
+        self.invite_backend = get_backend(request=request)
+        return super(SendInviteView, self).dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(SendInviteView, self).get_context_data(**kwargs)
-        context['remaining_invitations'] = (
-            InvitationKey.objects.remaining_invitations_for_user(self.request.user)
-        )
+        context['number_invites_remaining'] = (
+                self.invite_backend.number_invites_remaining)
         return context
 
     def form_valid(self, form):
         "Send the invite"
-        invitation = InvitationKey.objects.create_invitation(self.request.user)
-        invitation.send_to(form.cleaned_data['email'])
+        invite = Invite.objects.create_invite(self.invite_backend.invitor)
+        self.invite_backend.number_invites_remaining -= 1
+        invite.send_to(form.cleaned_data['email'])
         return super(SendInviteView, self).form_valid(form)
 
 
@@ -46,29 +51,25 @@ class RedeemInviteView(FormView):
     template_name = 'invitation/redeem.html'
     success_url = reverse_lazy('invitation_redeemed')
 
-    @property
-    def invitation_key(self):
-        return self.kwargs.get('invitation_key')
-
-    @property
-    def is_key_valid(self):
-        return InvitationKey.objects.is_key_valid(self.invitation_key)
+    def dispatch(self, request, *args, **kwargs):
+        self.invite_key = kwargs.get('invite_key')
+        self.invite = Invite.objects.get_invite(self.invite_key)
+        return super(RedeemInviteView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(RedeemInviteView, self).get_context_data(**kwargs)
         context.update({
-            'invitation_key': self.invitation_key,
-            'is_valid': self.is_key_valid,
+            'invite_key': self.invite_key,
+            'invite': self.invite,
         })
         return context
 
     def form_valid(self, form):
         "Redeem the invite"
-        if not self.is_key_valid:
+        if not self.invite:
             return super(RedeemInviteView, self).form_invalid(form)
         new_user = form.save()
-        invitation = InvitationKey.objects.get(key=self.invitation_key)
-        invitation.mark_used(new_user)
+        self.invite.redeem(new_user)
         return super(RedeemInviteView, self).form_valid(form)
 
 

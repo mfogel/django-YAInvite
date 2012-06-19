@@ -5,10 +5,10 @@
 <h2>Invite a friend</h2>
 
 <p>
-You have {{ remaining_invitations }} invitation{{ remaining_invitations|pluralize }} remaining to send.
+You have {{ number_invites_remaining }} invite{{ number_invites_remaining|pluralize }} remaining to send.
 </p>
 
-{% if remaining_invitations > 0 %}
+{% if number_invites_remaining > 0 %}
 <form method="POST">
     {% csrf_token %}
     <table>

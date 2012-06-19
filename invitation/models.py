@@ -9,6 +9,7 @@ from django.contrib.sites.models import Site
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.formats import localize
 from django.utils.hashcompat import sha_constructor
 
 # ensure our default settings get loaded
@@ -19,144 +20,98 @@ from invitation.conf import InvitationConf
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
 
 
-class InvitationKeyManager(models.Manager):
-    def get_key(self, invitation_key):
-        """
-        Return InvitationKey, or None if it doesn't (or shouldn't) exist.
-        """
-        # Don't bother hitting database if invitation_key doesn't match pattern.
-        if not SHA1_RE.search(invitation_key):
-            return None
+class InviteManager(models.Manager):
 
+    def is_key_wellformed(self, invite_key):
+        "Is the key syntactically valid?"
+        return bool(SHA1_RE.search(invite_key))
+
+    def get_invite(self, invite_key):
+        """
+        Return the ``Invite`` with the given key. Avoid hitting database
+        for malformed invite keys.
+        """
+        if not self.is_key_wellformed(invite_key):
+            return None
         try:
-            key = self.get(key=invitation_key)
+            invite = self.get(key=invite_key)
         except self.model.DoesNotExist:
             return None
+        return invite
 
-        return key
-
-    def is_key_valid(self, invitation_key):
+    def create_invite(self, invitor):
         """
-        Check if an ``InvitationKey`` is valid or not, returning a boolean,
-        ``True`` if the key is valid.
+        Create an ``Invite`` and return it.
+
+        The key for the ``Invite`` will be a SHA1 hash, generated from:
+            * time-specific data
+            * invitor-specific data
+            * a random salt
         """
-        invitation_key = self.get_key(invitation_key)
-        return invitation_key and invitation_key.is_usable()
-
-    def create_invitation(self, user):
-        """
-        Create an ``InvitationKey`` and returns it.
-
-        The key for the ``InvitationKey`` will be a SHA1 hash, generated
-        from a combination of the ``User``'s username and a random salt.
-        """
-        salt = sha_constructor(str(random.random())).hexdigest()[:5]
-        key = sha_constructor("%s%s%s" % (timezone.now(), salt, user.username)).hexdigest()
-        return self.create(from_user=user, key=key)
-
-    def remaining_invitations_for_user(self, user):
-        """
-        Return the number of remaining invitations for a given ``User``.
-        """
-        invitation_user, created = InvitationUser.objects.get_or_create(
-            inviter=user,
-            defaults={'invitations_remaining': settings.INVITATION_INVITES_PER_USER},
-        )
-        return invitation_user.invitations_remaining
-
-    def delete_expired_keys(self):
-        for key in self.all():
-            if key.key_expired():
-                key.delete()
+        payload = ''.join([
+            str(timezone.now()),
+            str(invitor),
+            sha_constructor(str(random.random())).hexdigest()[:5],
+        ])
+        key = sha_constructor(payload).hexdigest()
+        return self.create(invitor=invitor, key=key)
 
 
-class InvitationKey(models.Model):
-    key = models.CharField('invitation key', max_length=40)
-    date_invited = models.DateTimeField('date invited',
-                                        default=timezone.now)
-    from_user = models.ForeignKey(User,
-                                  related_name='invitations_sent')
-    registrant = models.ForeignKey(User, null=True, blank=True,
-                                  related_name='invitations_used')
+class Invite(models.Model):
+    key = models.CharField(max_length=40)
+    invited = models.DateTimeField(default=timezone.now)
+    expires = models.DateTimeField(
+        default=lambda: (
+            timezone.now() + datetime.timedelta(
+                    days=settings.INVITATION_INVITE_LIFETIME)
+            if settings.INVITATION_INVITE_LIFETIME
+            else None
+        ),
+        blank=True, null=True,
 
-    objects = InvitationKeyManager()
+    )
+    invitor = models.ForeignKey(settings.INVITATION_INVITOR_CLASS,
+            related_name='invite_sent_set')
+    redeemer = models.ForeignKey(User, related_name='invite_redeemed_set',
+            blank=True, null=True)
+
+    objects = InviteManager()
 
     def __unicode__(self):
-        return u"Invitation from %s on %s" % (self.from_user.username, self.date_invited)
+        return u'From {} at {}'.format(self.invitor, localize(self.invited))
 
-    def is_usable(self):
-        """
-        Return whether this key is still valid for registering a new user.
-        """
-        return self.registrant is None and not self.key_expired()
+    def is_redeemed(self):
+        "Has this Invite been redeemed?"
+        return bool(self.redeemer)
+    is_redeemed.boolean = True
 
-    def key_expired(self):
-        """
-        Determine whether this ``InvitationKey`` has expired, returning
-        a boolean -- ``True`` if the key has expired.
+    def is_expired(self):
+        "Has this Invite expired?"
+        return timezone.now() > self.expires
+    is_expired.boolean = True
 
-        The date the key has been created is incremented by the number of days
-        specified in the setting ``ACCOUNT_INVITATION_DAYS`` (which should be
-        the number of days after invite during which a user is allowed to
-        create their account); if the result is less than or equal to the
-        current date, the key has expired and this method returns ``True``.
+    def is_open(self):
+        "Is this Invite still 'open' - meaning it's unused and unexpired?"
+        return not self.is_redeemed() and not self.is_expired()
+    is_open.boolean = True
 
-        """
-        expiration_date = datetime.timedelta(days=settings.INVITATION_INVITE_LIFETIME)
-        return self.date_invited + expiration_date <= timezone.now()
-    key_expired.boolean = True
-
-    def mark_used(self, registrant):
-        """
-        Note that this key has been used to register a new user.
-        """
-        self.registrant = registrant
+    def redeem(self, redeemer):
+        "Mark & save this Invite as redeemed by the given User."
+        self.redeemer = redeemer
         self.save()
 
     def send_to(self, email):
         """
         Send an invitation email to ``email``.
         """
-        current_site = Site.objects.get_current()
+        context = {
+            'site': Site.objects.get_current(),
+            'invite': self,
+        }
 
-        subject = render_to_string('invitation/email/subject.txt',
-                                   { 'site': current_site,
-                                     'invitation_key': self })
-        # Email subject *must not* contain newlines
-        subject = ''.join(subject.splitlines())
+        subject = render_to_string('invitation/email/subject.txt', context)
+        subject = ''.join(subject.splitlines()) # must not contain newlines
 
-        message = render_to_string('invitation/email/body.txt',
-                                   { 'invitation_key': self,
-                                     'expiration_days': settings.INVITATION_INVITE_LIFETIME,
-                                     'site': current_site })
+        message = render_to_string('invitation/email/body.txt', context)
 
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
-
-
-class InvitationUser(models.Model):
-    inviter = models.ForeignKey(User, unique=True)
-    invitations_remaining = models.IntegerField()
-
-    def __unicode__(self):
-        return u"InvitationUser for %s" % self.inviter.username
-
-
-def user_post_save(sender, instance, created, **kwargs):
-    """Create InvitationUser for user when User is created."""
-    if created:
-        invitation_user = InvitationUser()
-        invitation_user.inviter = instance
-        invitation_user.invitations_remaining = settings.INVITATION_INVITES_PER_USER
-        invitation_user.save()
-
-models.signals.post_save.connect(user_post_save, sender=User)
-
-def invitation_key_post_save(sender, instance, created, **kwargs):
-    """Decrement invitations_remaining when InvitationKey is created."""
-    if created:
-        invitation_user = InvitationUser.objects.get(inviter=instance.from_user)
-        remaining = invitation_user.invitations_remaining
-        invitation_user.invitations_remaining = remaining-1
-        invitation_user.save()
-
-models.signals.post_save.connect(invitation_key_post_save, sender=InvitationKey)

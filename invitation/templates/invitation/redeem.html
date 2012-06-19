@@ -5,10 +5,10 @@
 <h2>Redeem your invitation</h2>
 
 <p>
-{{ is_valid|yesno:'Valid,Invalid' }} invitation key: <strong>{{ invitation_key }}</strong>
+{{ invite|yesno:'Valid,Invalid' }} invitation key: <strong>{{ invite_key }}</strong>
 </p>
 
-{% if is_valid %}
+{% if invite %}
 <form method="POST">
     {% csrf_token %}
     <table>

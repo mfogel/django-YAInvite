@@ -14,11 +14,11 @@ urlpatterns = patterns('',
         InviteSentView.as_view(),
         name='invitation_sent'
     ),
-    url(r'^redeem/(?P<invitation_key>\w+)/$',
+    url(r'^redeem/(?P<invite_key>\w+)/$',
         RedeemInviteView.as_view(),
         name='invitation_redeem'
     ),
-    url(r'^redeemed/(?P<invitation_key>\w+)/$',
+    url(r'^redeemed/$',
         InviteRedeemedView.as_view(),
         name='invitation_redeemed'
     ),

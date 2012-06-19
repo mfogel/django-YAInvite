@@ -1,17 +1,20 @@
-import os
 import random
+import re
 import datetime
+
 from django.db import models
 from django.conf import settings
-from django.utils.http import int_to_base36
-from django.utils.hashcompat import sha_constructor
-from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from django.contrib.sites.models import Site
+from django.utils import timezone
+from django.utils.hashcompat import sha_constructor
 
-from registration.models import SHA1_RE
+
+# from django-registration
+SHA1_RE = re.compile('^[a-f0-9]{40}$')
+
 
 class InvitationKeyManager(models.Manager):
     def get_key(self, invitation_key):
@@ -45,7 +48,7 @@ class InvitationKeyManager(models.Manager):
         from a combination of the ``User``'s username and a random salt.
         """
         salt = sha_constructor(str(random.random())).hexdigest()[:5]
-        key = sha_constructor("%s%s%s" % (datetime.datetime.now(), salt, user.username)).hexdigest()
+        key = sha_constructor("%s%s%s" % (timezone.now(), salt, user.username)).hexdigest()
         return self.create(from_user=user, key=key)
 
     def remaining_invitations_for_user(self, user):
@@ -54,7 +57,7 @@ class InvitationKeyManager(models.Manager):
         """
         invitation_user, created = InvitationUser.objects.get_or_create(
             inviter=user,
-            defaults={'invitations_remaining': settings.INVITATIONS_PER_USER})
+            defaults={'invitations_remaining': getattr(settings, 'INVITATIONS_PER_USER', 0)})
         return invitation_user.invitations_remaining
 
     def delete_expired_keys(self):
@@ -64,9 +67,9 @@ class InvitationKeyManager(models.Manager):
 
 
 class InvitationKey(models.Model):
-    key = models.CharField(_('invitation key'), max_length=40)
-    date_invited = models.DateTimeField(_('date invited'),
-                                        default=datetime.datetime.now)
+    key = models.CharField('invitation key', max_length=40)
+    date_invited = models.DateTimeField('date invited',
+                                        default=timezone.now)
     from_user = models.ForeignKey(User,
                                   related_name='invitations_sent')
     registrant = models.ForeignKey(User, null=True, blank=True,
@@ -95,8 +98,8 @@ class InvitationKey(models.Model):
         current date, the key has expired and this method returns ``True``.
 
         """
-        expiration_date = datetime.timedelta(days=settings.ACCOUNT_INVITATION_DAYS)
-        return self.date_invited + expiration_date <= datetime.datetime.now()
+        expiration_date = datetime.timedelta(days=getattr(settings, 'ACCOUNT_INVITATION_DAYS', 7))
+        return self.date_invited + expiration_date <= timezone.now()
     key_expired.boolean = True
 
     def mark_used(self, registrant):
@@ -120,7 +123,7 @@ class InvitationKey(models.Model):
 
         message = render_to_string('invitation/invitation_email.txt',
                                    { 'invitation_key': self,
-                                     'expiration_days': settings.ACCOUNT_INVITATION_DAYS,
+                                     'expiration_days': getattr(settings, 'ACCOUNT_INVITATION_DAYS', 7),
                                      'site': current_site })
 
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
@@ -139,7 +142,7 @@ def user_post_save(sender, instance, created, **kwargs):
     if created:
         invitation_user = InvitationUser()
         invitation_user.inviter = instance
-        invitation_user.invitations_remaining = settings.INVITATIONS_PER_USER
+        invitation_user.invitations_remaining = getattr(settings, 'INVITATIONS_PER_USER', 0)
         invitation_user.save()
 
 models.signals.post_save.connect(user_post_save, sender=User)
@@ -153,4 +156,3 @@ def invitation_key_post_save(sender, instance, created, **kwargs):
         invitation_user.save()
 
 models.signals.post_save.connect(invitation_key_post_save, sender=InvitationKey)
-

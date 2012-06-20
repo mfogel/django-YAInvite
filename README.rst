@@ -4,34 +4,34 @@ Django YAInvite
 
 Yet Another Invite system for Django. Why another?
 
-  * Supports allocating Invites to a model of your choice - meaning Invites
+-   Supports allocating Invites to a model of your choice - meaning Invites
     don't have to come from a User. If you have multi-user Accounts in your
     project and you'd like associate Invites with those Accounts rather than
     django's default User model, you can.
 
-  * Invite-specifc expiration dates. You configure a default lifetime for
+-   Invite-specifc expiration dates. You configure a default lifetime for
     invites, but then can specifically edit the expiration dates on a
     per-invite basis.
 
-  * Invites are redeemed via the signup of a new auth.User. Each invite
+-   Invites are redeemed via the signup of a new auth.User. Each invite
     may only be redeemed once.
 
 
 Installation
 ============
 
- #. Until this is on pypi, you can install from source::
+#.  Until this is on pypi, you can install from source::
 
         pip install -e git://github.com/mfogel/django-YAInvite.git
 
- #. Add ``yainvite`` to your ``INSTALLED_APPS``.
+#.  Add ``yainvite`` to your ``INSTALLED_APPS``.
 
- #. If desired, adjust some settings. See configuration section.
+#.  If desired, adjust some settings. See configuration section.
     Note that if you don't want to allocate and attribute Invites to
     auth.User's, you want to configure your ``YAINVITE_INVITER_MODEL``
     before moving on to the next step.
 
- #. Run the South migration to set up your YAInvite db tables::
+#.  Run the South migration to set up your YAInvite db tables::
 
         django-admin.py migrate yainvite
 
@@ -59,7 +59,6 @@ Available settings (details in ``conf.py``):
 
     Defaults to ``auth.User``.
 
-
 :``YAINVITE_INVITER_DB_TABLE``:
     If your ``INVITER_CLASS`` is set to a model that has a custom
     db_table name set in it's Meta, then you need to define this to
@@ -69,10 +68,10 @@ Available settings (details in ``conf.py``):
 Dependencies
 ============
 
-  * `South`__ for data migration, support of flexible ForeignKey allocating
-    Invites to a model of your choosing.
+- `South`__ for data migration, support of flexible ForeignKey allocating
+  Invites to a model of your choosing.
 
-  * `AppConf`__ for sane django app configuration/settings.
+- `AppConf`__ for sane django app configuration/settings.
 
 
 Found a Bug?

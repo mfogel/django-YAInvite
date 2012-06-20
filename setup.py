@@ -10,7 +10,9 @@ setup(
     url='https://github.com/mfogel/django-YAInvite',
     license='BSD',
     packages=['yainvite'],
-    install_requires=['django', 'South', 'django-appconf'],
+    install_requires=[
+        'django', 'South', 'django-appconf', 'django-extra-views',
+    ],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',

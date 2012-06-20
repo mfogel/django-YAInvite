@@ -95,11 +95,6 @@ class Invite(models.Model):
         return not self.is_redeemed() and not self.is_expired()
     is_open.boolean = True
 
-    def redeem(self, redeemer):
-        "Mark & save this Invite as redeemed by the given User."
-        self.redeemer = redeemer
-        self.save()
-
     def send_to(self, email, domain=None):
         """
         Send an invite email to ``email``.

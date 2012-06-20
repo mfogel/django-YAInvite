@@ -5,9 +5,6 @@ import datetime
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.sites.models import Site
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.formats import localize
 from django.utils.hashcompat import sha_constructor
@@ -94,19 +91,3 @@ class Invite(models.Model):
         "Is this Invite still 'open' - meaning it's unused and unexpired?"
         return not self.is_redeemed() and not self.is_expired()
     is_open.boolean = True
-
-    def send_to(self, email, domain=None):
-        """
-        Send an invite email to ``email``.
-        """
-        context = {
-            'domain': domain or Site.objects.get_current().domain,
-            'invite': self,
-        }
-
-        subject = render_to_string('yainvite/email/subject.txt', context)
-        subject = ''.join(subject.splitlines()) # must not contain newlines
-
-        message = render_to_string('yainvite/email/body.txt', context)
-
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])

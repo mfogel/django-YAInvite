@@ -9,6 +9,11 @@ Yet Another Invite system for Django. Why another?
     project and you'd like associate Invites with those Accounts rather than
     django's default User model, you can.
 
+-   Invites are indexed by key - a SHA1 hash of a timestamp, invite-allocator
+    specific data and a salt. This key can be passed around in any form,
+    ie. you can print these Invites out and go door-to-door with them if
+    you so desire.
+
 -   Invite-specifc expiration dates. You configure a default lifetime for
     invites, but then can specifically edit the expiration dates on a
     per-invite basis.

@@ -7,7 +7,8 @@ setup(
         'A django invite system where invites allocated to and sent by a '
         'a model of your choosing. (Can be auth.User, but could be your '
         'projects Account model, etc.) Invites are redeemed by a new User '
-        'signing up. Supports default and invite-specific expiration periods.'
+        'signing up with an valid invite key. Supports default and '
+        'invite-specific expiration periods.'
     ),
     author='Mike Fogel',
     author_email='mike@fogel.ca',

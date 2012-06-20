@@ -1,5 +1,5 @@
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
 from django.core.urlresolvers import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, FormView
@@ -7,8 +7,8 @@ from django.views.generic import TemplateView, FormView
 from extra_views.multi import MultiFormView
 
 from .backends import get_backend
-from .models import Invite
 from .forms import SendInviteForm, RedeemInviteForm
+from .utils import import_class
 
 
 class LoginRequiredMixin(object):
@@ -50,8 +50,11 @@ class InviteSentView(LoginRequiredMixin, TemplateView):
 
 class RedeemInviteView(MultiFormView):
     "Redeem an invite"
+
     forms = {
-        'user': MultiFormView.form(UserCreationForm),
+        'user': MultiFormView.form(
+            import_class(settings.YAINVITE_USER_CREATION_FORM)
+        ),
         'invite': MultiFormView.form(RedeemInviteForm),
     }
     template_name = 'yainvite/redeem.html'

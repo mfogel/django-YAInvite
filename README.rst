@@ -70,6 +70,13 @@ Available settings:
     db_table name set in it's Meta, then you need to define this to
     match. Elsewise, there's no need to configure this.
 
+:``YAINVITE_USER_CREATION_FORM``:
+    Form class to use to create a new User when redeeming an invite.
+    Required to have a save() method. This should be in standard python
+    dotted path format.
+
+    Defaults to ``django.contrib.auth.forms.UserCreationForm``
+
 
 Dependencies
 ============

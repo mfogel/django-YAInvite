@@ -2,33 +2,13 @@
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.exceptions import ImproperlyConfigured
-from django.utils.importlib import import_module
 
-
-def get_backend_class():
-    "Get a class object of the currently configured InviteBackend class"
-
-    # logic flow to find and import the configured backend class
-    # taken from django-registration
-
-    path = settings.YAINVITE_BACKEND
-    i = path.rfind('.')
-    module, attr = path[:i], path[i+1:]
-    try:
-        mod = import_module(module)
-    except ImportError, e:
-        raise ImproperlyConfigured('Error loading invite backend %s: "%s"' % (module, e))
-    try:
-        backend_class = getattr(mod, attr)
-    except AttributeError:
-        raise ImproperlyConfigured('Module "%s" does not define a registration backend named "%s"' % (module, attr))
-    return backend_class
+from .utils import import_class
 
 
 def get_backend(request):
     "Get an instance of the currently configured InviteBackend"
-    return get_backend_class()(request)
+    return import_class(settings.YAINVITE_BACKEND)(request)
 
 
 class InviteBackend(object):

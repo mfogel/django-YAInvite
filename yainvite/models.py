@@ -58,7 +58,7 @@ class InviteManager(models.Manager):
 
 
 class Invite(models.Model):
-    key = models.CharField(max_length=40)
+    key = models.CharField(max_length=40, db_index=True)
     invited = models.DateTimeField(default=timezone.now)
     expires = models.DateTimeField(
         default=lambda: (

@@ -27,7 +27,7 @@ class Migration(SchemaMigration):
         # Adding model 'Invite'
         db.create_table('yainvite_invite', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('key', self.gf('django.db.models.fields.CharField')(max_length=40)),
+            ('key', self.gf('django.db.models.fields.CharField')(max_length=40, db_index=True)),
             ('invited', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
             ('expires', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime(2012, 6, 26, 0, 0), null=True, blank=True)),
             ('invitor', self.gf('django.db.models.fields.related.ForeignKey')(related_name='invite_sent_set', to=orm[settings.YAINVITE_INVITOR_CLASS])),
@@ -91,7 +91,7 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'invited': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'invitor': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'invite_sent_set'", 'to': "orm['{}']".format(settings.YAINVITE_INVITOR_CLASS)}),
-            'key': ('django.db.models.fields.CharField', [], {'max_length': '40'}),
+            'key': ('django.db.models.fields.CharField', [], {'max_length': '40', 'db_index': 'True'}),
             'redeemer': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'invite_redeemed_set'", 'null': 'True', 'to': "orm['auth.User']"})
         }
     }

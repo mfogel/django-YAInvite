@@ -39,22 +39,22 @@ class InviteManager(models.Manager):
             return None
         return invite
 
-    def create_invite(self, invitor):
+    def create_invite(self, inviter):
         """
         Create an ``Invite`` and return it.
 
         The key for the ``Invite`` will be a SHA1 hash, generated from:
             * time-specific data
-            * invitor-specific data
+            * inviter-specific data
             * a random salt
         """
         payload = ''.join([
             str(timezone.now()),
-            str(invitor),
+            str(inviter),
             sha_constructor(str(random.random())).hexdigest()[:5],
         ])
         key = sha_constructor(payload).hexdigest()
-        return self.create(invitor=invitor, key=key)
+        return self.create(inviter=inviter, key=key)
 
 
 class Invite(models.Model):
@@ -63,14 +63,14 @@ class Invite(models.Model):
     expires = models.DateTimeField(
         default=lambda: (
             timezone.now() + datetime.timedelta(
-                    days=settings.YAINVITE_INVITE_LIFETIME)
-            if settings.YAINVITE_INVITE_LIFETIME
+                    days=settings.YAINVITE_DEFAULT_LIFETIME)
+            if settings.YAINVITE_DEFAULT_LIFETIME
             else None
         ),
         blank=True, null=True,
 
     )
-    invitor = models.ForeignKey(settings.YAINVITE_INVITOR_CLASS,
+    inviter = models.ForeignKey(settings.YAINVITE_INVITER_CLASS,
             related_name='invite_sent_set')
     redeemer = models.ForeignKey(User, related_name='invite_redeemed_set',
             blank=True, null=True)
@@ -78,7 +78,7 @@ class Invite(models.Model):
     objects = InviteManager()
 
     def __unicode__(self):
-        return u'From {} at {}'.format(self.invitor, localize(self.invited))
+        return u'From {} at {}'.format(self.inviter, localize(self.invited))
 
     def is_redeemed(self):
         "Has this Invite been redeemed?"

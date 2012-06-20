@@ -6,21 +6,15 @@ from appconf import AppConf
 
 class YAInviteConf(AppConf):
     # number of days an invite is valid for
-    INVITE_LIFETIME = 7
-
-    # number of invites granted to each new user
-    INVITES_PER_USER = 0
+    DEFAULT_LIFETIME = 7
 
     # Backend class to use
     BACKEND = 'yainvite.backends.UserProfileBackend'
-    #BACKEND = 'yainvite.backends.SiteBackend'
 
     # What the Invite object should link to. Probably also where you
     # want to keep track of 'number_invites_remaining'
-    INVITOR_CLASS = 'auth.User'
-    #INVITOR_CLASS = 'sites.Site'
+    INVITER_CLASS = 'auth.User'
 
-    # If your INVITOR_CLASS has a special db table named in it's Meta,
+    # If your INVITER_CLASS has a special db table named in it's Meta,
     # that needs to be replicated here
-    INVITOR_DB_TABLE = INVITOR_CLASS.lower().replace('.', '_')
-    #INVITOR_DB_TABLE = 'django_site'
+    INVITER_DB_TABLE = INVITER_CLASS.lower().replace('.', '_')

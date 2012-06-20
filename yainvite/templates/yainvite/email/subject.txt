@@ -1,1 +1,1 @@
-Invitation from {{ invite.invitor }} to join {{ site.name }}
+Invitation from {{ invite.inviter }} to join {{ site.name }}

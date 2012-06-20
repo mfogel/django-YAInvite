@@ -38,7 +38,7 @@ class InviteBackend(object):
     An InviteBackend takes either an django HTTP Request for initialization.
     It provides two properties:
 
-        self.invitor                    (readonly)
+        self.inviter                    (readonly)
         self.number_invites_remaining   (read/write)
 
     See the examples below for futher clarification.
@@ -49,7 +49,7 @@ class InviteBackend(object):
         self.request = request
 
     @property
-    def invitor(self):
+    def inviter(self):
         raise NotImplemented('Subclass and override me')
 
     def _get_number_invites_remaining(self):
@@ -66,7 +66,7 @@ class SiteBackend(InviteBackend):
         1. Invites come from Site objects
         2. Everyone always has 42 invites left.
 
-    Requires settings.YAINVITE_INVITOR_CLASS = 'auth.Site'
+    Requires settings.YAINVITE_INVITER_CLASS = 'auth.Site'
     """
 
     the_answer = 42
@@ -76,7 +76,7 @@ class SiteBackend(InviteBackend):
         self.site = Site.objects.get_current()
 
     @property
-    def invitor(self):
+    def inviter(self):
         return self.site
 
     def _get_number_invites_remaining(self):
@@ -94,7 +94,7 @@ class UserProfileBackend(InviteBackend):
         2. There is a 'number_invites_remaining' property on the User's
            profile object. All Users are assumed to have profiles.
 
-    Requires settings.YAINVITE_INVITOR_CLASS = 'auth.User'
+    Requires settings.YAINVITE_INVITER_CLASS = 'auth.User'
     """
 
     def __init__(self, request):
@@ -102,7 +102,7 @@ class UserProfileBackend(InviteBackend):
         self.user = request.user
 
     @property
-    def invitor(self):
+    def inviter(self):
         return self.user
 
     def _get_number_invites_remaining(self):

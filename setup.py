@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='django-YAInvite',
-    version='2.0',
+    version='1.9',
     description='Yet Another Invite system for Django',
     long_description=open('README.rst').read(),
     author='Mike Fogel',

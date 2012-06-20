@@ -18,3 +18,6 @@ class YAInviteConf(AppConf):
     # If your INVITER_CLASS has a special db table named in it's Meta,
     # that needs to be replicated here
     INVITER_DB_TABLE = INVITER_CLASS.lower().replace('.', '_')
+
+    # form class to use when redeeming an Invite
+    USER_CREATION_FORM = 'django.contrib.auth.forms.UserCreationForm'

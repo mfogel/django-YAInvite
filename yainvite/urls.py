@@ -14,7 +14,7 @@ urlpatterns = patterns('',
         InviteSentView.as_view(),
         name='yainvite_sent'
     ),
-    url(r'^redeem/(?P<invite_key>\w+)/$',
+    url(r'^redeem(?:/(?P<invite_key>\w+))?/$',
         RedeemInviteView.as_view(),
         name='yainvite_redeem'
     ),

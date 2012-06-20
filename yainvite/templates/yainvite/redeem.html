@@ -4,19 +4,14 @@
 
 <h2>Redeem your invite</h2>
 
-<p>
-{{ invite|yesno:'Valid,Invalid' }} invite key: <strong>{{ invite_key }}</strong>
-</p>
-
-{% if invite %}
 <form method="POST">
     {% csrf_token %}
     <table>
-        {{ form.as_table }}
+        {{ invite_form.as_table }}
+        {{ user_form.as_table }}
     </table>
     <input type="submit" value="Sign Up!" />
 </form>
-{% endif %}
 
 
 {% endblock %}

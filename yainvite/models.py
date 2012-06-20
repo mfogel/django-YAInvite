@@ -1,3 +1,4 @@
+import base64
 import random
 import re
 import datetime
@@ -5,9 +6,6 @@ import datetime
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.sites.models import Site
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.formats import localize
 from django.utils.hashcompat import sha_constructor
@@ -16,15 +14,15 @@ from django.utils.hashcompat import sha_constructor
 from .conf import YAInviteConf
 
 
-# from django-registration
-SHA1_RE = re.compile('^[a-f0-9]{40}$')
-
-
 class InviteManager(models.Manager):
+
+    # 40 bit base64.b32encode lowered regex
+    # http://tools.ietf.org/html/rfc3548.html
+    KEY_RE = re.compile('^[a-z2-7]{8}$')
 
     def is_key_wellformed(self, invite_key):
         "Is the key syntactically valid?"
-        return bool(SHA1_RE.search(invite_key))
+        return bool(self.KEY_RE.search(invite_key))
 
     def get_invite(self, invite_key):
         """
@@ -51,14 +49,14 @@ class InviteManager(models.Manager):
         payload = ''.join([
             str(timezone.now()),
             str(inviter),
-            sha_constructor(str(random.random())).hexdigest()[:5],
+            sha_constructor(str(random.random())).hexdigest(),
         ])
-        key = sha_constructor(payload).hexdigest()
+        key = base64.b32encode(sha_constructor(payload).digest())[:8].lower()
         return self.create(inviter=inviter, key=key)
 
 
 class Invite(models.Model):
-    key = models.CharField(max_length=40, db_index=True)
+    key = models.CharField(max_length=8, db_index=True)
     invited = models.DateTimeField(default=timezone.now)
     expires = models.DateTimeField(
         default=lambda: (
@@ -94,24 +92,3 @@ class Invite(models.Model):
         "Is this Invite still 'open' - meaning it's unused and unexpired?"
         return not self.is_redeemed() and not self.is_expired()
     is_open.boolean = True
-
-    def redeem(self, redeemer):
-        "Mark & save this Invite as redeemed by the given User."
-        self.redeemer = redeemer
-        self.save()
-
-    def send_to(self, email, domain=None):
-        """
-        Send an invite email to ``email``.
-        """
-        context = {
-            'domain': domain or Site.objects.get_current().domain,
-            'invite': self,
-        }
-
-        subject = render_to_string('yainvite/email/subject.txt', context)
-        subject = ''.join(subject.splitlines()) # must not contain newlines
-
-        message = render_to_string('yainvite/email/body.txt', context)
-
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])

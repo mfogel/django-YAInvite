@@ -1,12 +1,14 @@
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
 from django.core.urlresolvers import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, FormView
 
+from extra_views.multi import MultiFormView
+
 from .backends import get_backend
-from .models import Invite
-from .forms import SendInviteForm
+from .forms import SendInviteForm, RedeemInviteForm
+from .utils import import_class
 
 
 class LoginRequiredMixin(object):
@@ -34,10 +36,10 @@ class SendInviteView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         "Send the invite"
-        invite = Invite.objects.create_invite(self.invite_backend.inviter)
-        self.invite_backend.number_invites_remaining -= 1
-        invite.send_to(form.cleaned_data['email'],
-                domain=self.request.META['HTTP_HOST'])
+        if self.invite_backend.number_invites_remaining > 0:
+            self.invite_backend.number_invites_remaining -= 1
+            form.send(self.invite_backend.inviter,
+                    domain=self.request.META['HTTP_HOST'])
         return super(SendInviteView, self).form_valid(form)
 
 
@@ -46,32 +48,25 @@ class InviteSentView(LoginRequiredMixin, TemplateView):
     template_name = 'yainvite/sent.html'
 
 
-class RedeemInviteView(FormView):
+class RedeemInviteView(MultiFormView):
     "Redeem an invite"
-    form_class = UserCreationForm
+
+    forms = {
+        'user': MultiFormView.form(
+            import_class(settings.YAINVITE_USER_CREATION_FORM)
+        ),
+        'invite': MultiFormView.form(RedeemInviteForm),
+    }
     template_name = 'yainvite/redeem.html'
     success_url = reverse_lazy('yainvite_redeemed')
 
-    def dispatch(self, request, *args, **kwargs):
-        self.invite_key = kwargs.get('invite_key')
-        self.invite = Invite.objects.get_invite(self.invite_key)
-        return super(RedeemInviteView, self).dispatch(request, *args, **kwargs)
+    def get_initial_invite(self):
+        return {'key': self.kwargs.get('invite_key', '')}
 
-    def get_context_data(self, **kwargs):
-        context = super(RedeemInviteView, self).get_context_data(**kwargs)
-        context.update({
-            'invite_key': self.invite_key,
-            'invite': self.invite,
-        })
-        return context
-
-    def form_valid(self, form):
+    def valid_all(self, forms):
         "Redeem the invite"
-        if not self.invite:
-            return super(RedeemInviteView, self).form_invalid(form)
-        new_user = form.save()
-        self.invite.redeem(new_user)
-        return super(RedeemInviteView, self).form_valid(form)
+        new_user = forms['user'].save()
+        forms['invite'].redeem(new_user)
 
 
 class InviteRedeemedView(TemplateView):

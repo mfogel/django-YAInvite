@@ -100,12 +100,12 @@ class Invite(models.Model):
         self.redeemer = redeemer
         self.save()
 
-    def send_to(self, email):
+    def send_to(self, email, domain=None):
         """
         Send an invite email to ``email``.
         """
         context = {
-            'site': Site.objects.get_current(),
+            'domain': domain or Site.objects.get_current().domain,
             'invite': self,
         }
 

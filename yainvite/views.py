@@ -36,7 +36,8 @@ class SendInviteView(LoginRequiredMixin, FormView):
         "Send the invite"
         invite = Invite.objects.create_invite(self.invite_backend.inviter)
         self.invite_backend.number_invites_remaining -= 1
-        invite.send_to(form.cleaned_data['email'])
+        invite.send_to(form.cleaned_data['email'],
+                domain=self.request.META['HTTP_HOST'])
         return super(SendInviteView, self).form_valid(form)
 
 

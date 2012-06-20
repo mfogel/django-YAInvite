@@ -9,7 +9,7 @@ class YAInviteConf(AppConf):
     DEFAULT_LIFETIME = 7
 
     # Backend class to use
-    BACKEND = 'yainvite.backends.UserProfileBackend'
+    BACKEND = 'yainvite.backends.UserUnlimitedBackend'
 
     # What the Invite object should link to. Probably also where you
     # want to keep track of 'number_invites_remaining'

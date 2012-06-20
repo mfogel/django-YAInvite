@@ -33,7 +33,8 @@ def get_backend(request):
 
 class InviteBackend(object):
     """
-    Base Class for InviteBackends.
+    Base Class for InviteBackends. For custom InviteBackends, subclass
+    me and adjust ``YAINVITE_BACKEND`` appropriately.
 
     An InviteBackend takes either an django HTTP Request for initialization.
     It provides two properties:
@@ -60,24 +61,9 @@ class InviteBackend(object):
             _get_number_invites_remaining, _set_number_invites_remaining)
 
 
-class SiteBackend(InviteBackend):
-    """
-    A backend implementation for the following scenario:
-        1. Invites come from Site objects
-        2. Everyone always has 42 invites left.
-
-    Requires settings.YAINVITE_INVITER_CLASS = 'auth.Site'
-    """
-
+class UnlimitedInvitesMixin(object):
+    "Mixin that allows unlimited invites to be sent"
     the_answer = 42
-
-    def __init__(self, request):
-        super(SiteBackend, self).__init__(request)
-        self.site = Site.objects.get_current()
-
-    @property
-    def inviter(self):
-        return self.site
 
     def _get_number_invites_remaining(self):
         return self.the_answer
@@ -87,7 +73,53 @@ class SiteBackend(InviteBackend):
             _get_number_invites_remaining, _set_number_invites_remaining)
 
 
-class UserProfileBackend(InviteBackend):
+class UserInviterMixin(object):
+    "Mixin that implements auth.User objects being used to send Invites"
+    def __init__(self, request):
+        super(UserInviterMixin, self).__init__(request)
+        self.user = request.user
+
+    @property
+    def inviter(self):
+        return self.user
+
+
+######## Sample Backends ########
+
+
+class SiteBackend(UnlimitedInvitesMixin, InviteBackend):
+    """
+    A backend implementation for the following scenario:
+        1. Invites come from Site objects
+        2. Everyone always has 42 invites left.
+
+    Require settings:
+        * YAINVITE_INVITER_CLASS = 'sites.Site'
+        * YAINVITE_INVITER_DB_TABLE = 'django_site'
+    """
+
+    def __init__(self, request):
+        super(SiteBackend, self).__init__(request)
+        self.site = Site.objects.get_current()
+
+    @property
+    def inviter(self):
+        return self.site
+
+
+class UserUnlimitedBackend(
+        UserInviterMixin, UnlimitedInvitesMixin, InviteBackend):
+    """
+    A backend implementation for the following scenario:
+        1. Invites come from User objects
+        2. Everyone always has 42 invites left.
+
+    Requires settings.YAINVITE_INVITER_CLASS = 'auth.User'
+    """
+    pass
+
+
+class UserProfileBackend(UserInviterMixin, InviteBackend):
     """
     A backend implementation for the following scenario:
         1. Invites come from User objects
@@ -96,14 +128,6 @@ class UserProfileBackend(InviteBackend):
 
     Requires settings.YAINVITE_INVITER_CLASS = 'auth.User'
     """
-
-    def __init__(self, request):
-        super(UserProfileBackend, self).__init__(request)
-        self.user = request.user
-
-    @property
-    def inviter(self):
-        return self.user
 
     def _get_number_invites_remaining(self):
         return self.user.get_profile().number_invites_remaining

@@ -31,10 +31,10 @@ Installation
 
 #.  Add ``yainvite`` to your ``INSTALLED_APPS``.
 
-#.  If desired, adjust some settings. See configuration section.
-    Note that if you don't want to allocate and attribute Invites to
-    auth.User's, you want to configure your ``YAINVITE_INVITER_MODEL``
-    before moving on to the next step.
+#.  If desired, adjust some settings. See the configuration section below.
+    Note that if you're choosing to allocated and attribute your Invites to
+    a model other than the default, you want to configure your
+    ``YAINVITE_INVITER_MODEL`` `before` moving on to the next step.
 
 #.  Run the South migration to set up your YAInvite db tables::
 
@@ -44,7 +44,7 @@ Installation
 Configuration
 =============
 
-Available settings (details in ``conf.py``):
+Available settings:
 
 :``YAINVITE_DEFAULT_LIFETIME``:
     Default number of days an Invite is valid for. Defaults to 7.
@@ -53,7 +53,8 @@ Available settings (details in ``conf.py``):
     InviteBackend class to use. The InviteBackend class describes
     how to extract the an ``YAINVITE_INVITER_CLASS`` instance from a
     django http request object, and how to determine how many unused
-    invites that instance has available. See ``backends.py`` for details.
+    invites that instance has available. See ``yainvite/backends.py``
+    for details.
 
     Defaults to ``yainvite.backends.UserUnlimitedBackend``.
 
@@ -65,7 +66,7 @@ Available settings (details in ``conf.py``):
     Defaults to ``auth.User``.
 
 :``YAINVITE_INVITER_DB_TABLE``:
-    If your ``INVITER_CLASS`` is set to a model that has a custom
+    If your ``YAINVITE_INVITER_CLASS`` is set to a model that has a custom
     db_table name set in it's Meta, then you need to define this to
     match. Elsewise, there's no need to configure this.
 

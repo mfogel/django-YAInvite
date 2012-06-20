@@ -19,8 +19,8 @@ class LoginRequiredMixin(object):
 class SendInviteView(LoginRequiredMixin, FormView):
     "Send an invite"
     form_class = SendInviteForm
-    template_name = 'invitation/send.html'
-    success_url = reverse_lazy('invitation_sent')
+    template_name = 'yainvite/send.html'
+    success_url = reverse_lazy('yainvite_sent')
 
     def dispatch(self, request, *args, **kwargs):
         self.invite_backend = get_backend(request=request)
@@ -42,14 +42,14 @@ class SendInviteView(LoginRequiredMixin, FormView):
 
 class InviteSentView(LoginRequiredMixin, TemplateView):
     "Invite successfully sent - success page"
-    template_name = 'invitation/sent.html'
+    template_name = 'yainvite/sent.html'
 
 
 class RedeemInviteView(FormView):
     "Redeem an invite"
     form_class = UserCreationForm
-    template_name = 'invitation/redeem.html'
-    success_url = reverse_lazy('invitation_redeemed')
+    template_name = 'yainvite/redeem.html'
+    success_url = reverse_lazy('yainvite_redeemed')
 
     def dispatch(self, request, *args, **kwargs):
         self.invite_key = kwargs.get('invite_key')
@@ -75,4 +75,4 @@ class RedeemInviteView(FormView):
 
 class InviteRedeemedView(TemplateView):
     "Invite successfully redeemed - success page"
-    template_name = 'invitation/redeemed.html'
+    template_name = 'yainvite/redeemed.html'

@@ -1,6 +1,6 @@
-{% extends 'invitation/base.html' %}
+{% extends 'yainvite/base.html' %}
 
-{% block invitation_content %}
+{% block main_content %}
 
 <h2>Invite a friend</h2>
 
@@ -14,7 +14,7 @@ You have {{ number_invites_remaining }} invite{{ number_invites_remaining|plural
     <table>
         {{ form.as_table }}
     </table>
-    <input type="submit" value="Send Invitation" />
+    <input type="submit" value="Send Invite" />
 </form>
 {% endif %}
 

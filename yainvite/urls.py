@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import patterns, url
 
-from invitation.views import (
+from .views import (
         SendInviteView, InviteSentView,
         RedeemInviteView, InviteRedeemedView)
 
@@ -8,18 +8,18 @@ from invitation.views import (
 urlpatterns = patterns('',
     url(r'^send/$',
         SendInviteView.as_view(),
-        name='invitation_send'
+        name='yainvite_send'
     ),
     url(r'^sent/$',
         InviteSentView.as_view(),
-        name='invitation_sent'
+        name='yainvite_sent'
     ),
     url(r'^redeem/(?P<invite_key>\w+)/$',
         RedeemInviteView.as_view(),
-        name='invitation_redeem'
+        name='yainvite_redeem'
     ),
     url(r'^redeemed/$',
         InviteRedeemedView.as_view(),
-        name='invitation_redeemed'
+        name='yainvite_redeemed'
     ),
 )

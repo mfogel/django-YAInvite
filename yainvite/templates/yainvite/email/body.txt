@@ -1,7 +1,7 @@
 You have been invited by {{ invite.invitor }} to join {{ site.name }}!
 
 Go to
-http://{{site.domain}}{% url invitation_redeem invite_key=invite.key %}
+http://{{site.domain}}{% url yainvite_redeem invite_key=invite.key %}
 to join!
 
 All the best,

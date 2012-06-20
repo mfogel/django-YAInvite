@@ -4,16 +4,16 @@ from django.conf import settings
 from appconf import AppConf
 
 
-class InvitationConf(AppConf):
-    # number of days an invitation is valid for
+class YAInviteConf(AppConf):
+    # number of days an invite is valid for
     INVITE_LIFETIME = 7
 
     # number of invites granted to each new user
     INVITES_PER_USER = 0
 
     # Backend class to use
-    BACKEND = 'invitation.backends.UserProfileBackend'
-    #BACKEND = 'invitation.backends.SiteBackend'
+    BACKEND = 'yainvite.backends.UserProfileBackend'
+    #BACKEND = 'yainvite.backends.SiteBackend'
 
     # What the Invite object should link to. Probably also where you
     # want to keep track of 'number_invites_remaining'

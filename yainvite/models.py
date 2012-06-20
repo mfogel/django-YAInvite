@@ -13,7 +13,7 @@ from django.utils.formats import localize
 from django.utils.hashcompat import sha_constructor
 
 # ensure our default settings get loaded
-from .conf import InvitationConf
+from .conf import YAInviteConf
 
 
 # from django-registration
@@ -63,14 +63,14 @@ class Invite(models.Model):
     expires = models.DateTimeField(
         default=lambda: (
             timezone.now() + datetime.timedelta(
-                    days=settings.INVITATION_INVITE_LIFETIME)
-            if settings.INVITATION_INVITE_LIFETIME
+                    days=settings.YAINVITE_INVITE_LIFETIME)
+            if settings.YAINVITE_INVITE_LIFETIME
             else None
         ),
         blank=True, null=True,
 
     )
-    invitor = models.ForeignKey(settings.INVITATION_INVITOR_CLASS,
+    invitor = models.ForeignKey(settings.YAINVITE_INVITOR_CLASS,
             related_name='invite_sent_set')
     redeemer = models.ForeignKey(User, related_name='invite_redeemed_set',
             blank=True, null=True)
@@ -102,16 +102,16 @@ class Invite(models.Model):
 
     def send_to(self, email):
         """
-        Send an invitation email to ``email``.
+        Send an invite email to ``email``.
         """
         context = {
             'site': Site.objects.get_current(),
             'invite': self,
         }
 
-        subject = render_to_string('invitation/email/subject.txt', context)
+        subject = render_to_string('yainvite/email/subject.txt', context)
         subject = ''.join(subject.splitlines()) # must not contain newlines
 
-        message = render_to_string('invitation/email/body.txt', context)
+        message = render_to_string('yainvite/email/body.txt', context)
 
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])

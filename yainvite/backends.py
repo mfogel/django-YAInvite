@@ -12,7 +12,7 @@ def get_backend_class():
     # logic flow to find and import the configured backend class
     # taken from django-registration
 
-    path = settings.INVITATION_BACKEND
+    path = settings.YAINVITE_BACKEND
     i = path.rfind('.')
     module, attr = path[:i], path[i+1:]
     try:
@@ -66,7 +66,7 @@ class SiteBackend(InviteBackend):
         1. Invites come from Site objects
         2. Everyone always has 42 invites left.
 
-    Requires settings.INVITATION_INVITOR_CLASS = 'auth.Site'
+    Requires settings.YAINVITE_INVITOR_CLASS = 'auth.Site'
     """
 
     the_answer = 42
@@ -94,7 +94,7 @@ class UserProfileBackend(InviteBackend):
         2. There is a 'number_invites_remaining' property on the User's
            profile object. All Users are assumed to have profiles.
 
-    Requires settings.INVITATION_INVITOR_CLASS = 'auth.User'
+    Requires settings.YAINVITE_INVITOR_CLASS = 'auth.User'
     """
 
     def __init__(self, request):

@@ -1,11 +1,11 @@
-{% extends 'invitation/base.html' %}
+{% extends 'yainvite/base.html' %}
 
-{% block invitation_content %}
+{% block main_content %}
 
-<h2>Redeem your invitation</h2>
+<h2>Redeem your invite</h2>
 
 <p>
-{{ invite|yesno:'Valid,Invalid' }} invitation key: <strong>{{ invite_key }}</strong>
+{{ invite|yesno:'Valid,Invalid' }} invite key: <strong>{{ invite_key }}</strong>
 </p>
 
 {% if invite %}

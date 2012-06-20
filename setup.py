@@ -1,13 +1,19 @@
 from setuptools import setup
 
 setup(
-    name='django-invitation',
-    version='1.0',
-    description='Built on top of django-registration, it restricts registration to a given number of invited person per active user (strategy introduced by GMail to involve 2.0 users).',
-    author='David Larlet',
-    author_email='david@larlet.fr',
-    url='http://code.welldev.org/django-invitation/',
-    packages=['invitation'],
+    name='django-YAInvite',
+    version='2.0',
+    description=(
+        'A django invite system where invites allocated to and sent by a '
+        'a model of your choosing. (Can be auth.User, but could be your '
+        'projects Account model, etc.) Invites are redeemed by a new User '
+        'signing up. Supports default and invite-specific expiration periods.'
+    ),
+    author='Mike Fogel',
+    author_email='mike@fogel.ca',
+    url='https://github.com/mfogel/django-YAInvite',
+    license='BSD',
+    packages=['yainvite'],
     install_requires=['django', 'South', 'django-appconf'],
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -18,11 +24,4 @@ setup(
         'Programming Language :: Python',
         'Framework :: Django',
     ],
-    # Make setuptools include all data files under version control,
-    # svn and CVS by default
-    include_package_data=True,
-    zip_safe=False,
-    # Tells setuptools to download setuptools_hg before running setup.py so
-    # it can find the data files under Hg version control.
-    setup_requires=['setuptools_hg'],
 )

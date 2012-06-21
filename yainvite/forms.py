@@ -4,7 +4,7 @@ from django.contrib.sites.models import Site
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 
-from .models import Invite
+from .models import Invite, EmailEvent
 
 
 class SendInviteForm(forms.Form):
@@ -14,16 +14,16 @@ class SendInviteForm(forms.Form):
     def send(self, inviter, domain=None):
         "Create and send an Invite via email"
         email = self.cleaned_data['email']
-        context = {
-            'domain': domain or Site.objects.get_current().domain,
-            'invite': Invite.objects.create_invite(inviter),
-        }
+        domain = domain or Site.objects.get_current().domain
+        invite = Invite.objects.create_invite(inviter)
 
+        context = {'domain': domain, 'invite': invite}
         subject = render_to_string('yainvite/email/subject.txt', context)
         subject = ''.join(subject.splitlines()) # must not contain newlines
         message = render_to_string('yainvite/email/body.txt', context)
-
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
+
+        EmailEvent.objects.create(invite=invite, domain=domain, sent_to=email)
 
 
 class RedeemInviteForm(forms.Form):

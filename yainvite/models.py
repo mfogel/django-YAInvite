@@ -92,3 +92,18 @@ class Invite(models.Model):
         "Is this Invite still 'open' - meaning it's unused and unexpired?"
         return not self.is_redeemed() and not self.is_expired()
     is_open.boolean = True
+
+
+class EmailEvent(models.Model):
+    """
+    Represents the act of sending an Invite by email using the YAInvite
+    tools. Functions as a log of emails sent with invite keys.
+    """
+
+    invite = models.ForeignKey(Invite, related_name='emailevent_set')
+    domain = models.CharField(max_length=255, blank=True)
+    sent_at = models.DateTimeField(auto_now_add=True)
+    sent_to = models.EmailField(max_length=255)
+
+    def __unicode__(self):
+        return 'To {} at {}'.format(self.sent_to, localize(self.sent_at))

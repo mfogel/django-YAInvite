@@ -1,18 +1,3 @@
-"""
-South migration to properly set up the Foreign Key from an Invite to the
-object of your choosing.
-
-This migration changes depending on what your
-settings.YAINVITE_INVITER_CLASS is set for. If you choose to change this
-setting, you'll need to migrate your database again somehow.
-
-You may also want to put a:
-    needed_by = (('yainvite', '0001_initial'),)
-in the migration where the YAINVITE_INVITER_CLASS is actually created.
-See http://south.aeracode.org/wiki/Dependencies#ReverseDependencies
-for details.
-"""
-
 # -*- coding: utf-8 -*-
 import datetime
 from south.db import db
@@ -24,21 +9,20 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'Invite'
-        db.create_table('yainvite_invite', (
+        # Adding model 'EmailEvent'
+        db.create_table('yainvite_emailevent', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('key', self.gf('django.db.models.fields.CharField')(max_length=8, db_index=True)),
-            ('created_at', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True)),
-            ('expires_at', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-            ('inviter', self.gf('django.db.models.fields.related.ForeignKey')(related_name='invite_sent_set', to=orm[settings.YAINVITE_INVITER_CLASS])),
-            ('redeemer', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='invite_redeemed_set', null=True, to=orm['auth.User'])),
+            ('invite', self.gf('django.db.models.fields.related.ForeignKey')(related_name='emailevent_set', to=orm['yainvite.Invite'])),
+            ('domain', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
+            ('sent_to', self.gf('django.db.models.fields.EmailField')(max_length=255)),
+            ('sent_at', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
         ))
-        db.send_create_signal('yainvite', ['Invite'])
+        db.send_create_signal('yainvite', ['EmailEvent'])
 
 
     def backwards(self, orm):
-        # Deleting model 'Invite'
-        db.delete_table('yainvite_invite')
+        # Deleting model 'EmailEvent'
+        db.delete_table('yainvite_emailevent')
 
 
     models = {
@@ -85,10 +69,18 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
+        'yainvite.emailevent': {
+            'Meta': {'object_name': 'EmailEvent'},
+            'domain': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'invite': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'emailevent_set'", 'to': "orm['yainvite.Invite']"}),
+            'sent_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'sent_to': ('django.db.models.fields.EmailField', [], {'max_length': '255'})
+        },
         'yainvite.invite': {
             'Meta': {'object_name': 'Invite'},
             'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True'}),
-            'expires_at': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2012, 6, 26, 0, 0)', 'null': 'True', 'blank': 'True'}),
+            'expires_at': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2012, 6, 28, 0, 0)', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'inviter': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'invite_sent_set'", 'to': "orm['{}']".format(settings.YAINVITE_INVITER_CLASS)}),
             'key': ('django.db.models.fields.CharField', [], {'max_length': '8', 'db_index': 'True'}),

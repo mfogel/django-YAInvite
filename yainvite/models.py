@@ -57,8 +57,8 @@ class InviteManager(models.Manager):
 
 class Invite(models.Model):
     key = models.CharField(max_length=8, db_index=True)
-    invited = models.DateTimeField(default=timezone.now)
-    expires = models.DateTimeField(
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(
         default=lambda: (
             timezone.now() + datetime.timedelta(
                     days=settings.YAINVITE_DEFAULT_LIFETIME)
@@ -76,7 +76,7 @@ class Invite(models.Model):
     objects = InviteManager()
 
     def __unicode__(self):
-        return u'From {} at {}'.format(self.inviter, localize(self.invited))
+        return u'{}: {}'.format(self.inviter, self.key)
 
     def is_redeemed(self):
         "Has this Invite been redeemed?"
@@ -85,10 +85,25 @@ class Invite(models.Model):
 
     def is_expired(self):
         "Has this Invite expired?"
-        return timezone.now() > self.expires
+        return timezone.now() > self.expires_at
     is_expired.boolean = True
 
     def is_open(self):
         "Is this Invite still 'open' - meaning it's unused and unexpired?"
         return not self.is_redeemed() and not self.is_expired()
     is_open.boolean = True
+
+
+class EmailEvent(models.Model):
+    """
+    Represents the act of sending an Invite by email using the YAInvite
+    tools. Functions as a log of emails sent with invite keys.
+    """
+
+    invite = models.ForeignKey(Invite, related_name='emailevent_set')
+    domain = models.CharField(max_length=255, blank=True)
+    sent_at = models.DateTimeField(auto_now_add=True)
+    sent_to = models.EmailField(max_length=255)
+
+    def __unicode__(self):
+        return 'To {} at {}'.format(self.sent_to, localize(self.sent_at))

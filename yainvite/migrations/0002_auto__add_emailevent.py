@@ -14,8 +14,8 @@ class Migration(SchemaMigration):
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('invite', self.gf('django.db.models.fields.related.ForeignKey')(related_name='emailevent_set', to=orm['yainvite.Invite'])),
             ('domain', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
-            ('sent_at', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('sent_to', self.gf('django.db.models.fields.EmailField')(max_length=255)),
+            ('sent_at', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
         ))
         db.send_create_signal('yainvite', ['EmailEvent'])
 
@@ -79,9 +79,9 @@ class Migration(SchemaMigration):
         },
         'yainvite.invite': {
             'Meta': {'object_name': 'Invite'},
-            'expires': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2012, 6, 28, 0, 0)', 'null': 'True', 'blank': 'True'}),
+            'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True'}),
+            'expires_at': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2012, 6, 28, 0, 0)', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'invited': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'inviter': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'invite_sent_set'", 'to': "orm['{}']".format(settings.YAINVITE_INVITER_CLASS)}),
             'key': ('django.db.models.fields.CharField', [], {'max_length': '8', 'db_index': 'True'}),
             'redeemer': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'invite_redeemed_set'", 'null': 'True', 'to': "orm['auth.User']"})

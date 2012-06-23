@@ -12,7 +12,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import timezone
 
-from .forms import RedeemInviteForm
+from .forms import RedeemInviteForm, SendInviteForm
 from .models import Invite
 
 
@@ -106,3 +106,29 @@ class RedeemInviteFormTestCase(TestCase):
         self.assertFalse(RedeemInviteForm().is_valid())
         self.assertFalse(RedeemInviteForm({'key': ''}).is_valid())
         self.assertFalse(RedeemInviteForm({'key': 'beefcake'}).is_valid())
+
+
+class SendInviteFormTestCase(TestCase):
+    """
+    Test the SendInviteForm
+    """
+
+    to_addr = 'test@example.com'
+
+    def setUp(self):
+        self.inviter = User.objects.create(
+                username='user', password='-', email='user@example.com')
+
+    def test_form_valid(self):
+        self.assertFalse(SendInviteForm().is_valid())
+        form = SendInviteForm({'email': self.to_addr})
+        self.assertTrue(form.is_valid())
+
+    def test_send_email(self):
+        form = SendInviteForm({'email': 'test@example.com'})
+        form.full_clean()
+        form.send(self.inviter)
+        self.assertEqual(len(mail.outbox), 1)
+        msg = mail.outbox[0]
+        self.assertEqual(len(msg.to), 1)
+        self.assertEqual(msg.to[0], self.to_addr)

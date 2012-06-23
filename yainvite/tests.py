@@ -179,3 +179,12 @@ class UserUnlimitedBackendTestCase(TestCase):
 class UserProfileBackendTestCase(TestCase):
     # TODO: fill me in
     pass
+
+
+class FunctionalTestCase(TestCase):
+    """
+    Test the send-redeem invite process from perspective of an
+    external client.
+    """
+    # TODO: fill me in
+    pass

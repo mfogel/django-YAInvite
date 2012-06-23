@@ -12,6 +12,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import timezone
 
+from .forms import RedeemInviteForm
 from .models import Invite
 
 
@@ -22,9 +23,9 @@ class InviteModelTestCase(TestCase):
 
     def setUp(self):
         self.inviter = User.objects.create(
-                username='user1', password='pass1', email='user1@example.com')
+                username='user1', password='-', email='user1@example.com')
         self.redeemer = User.objects.create(
-                username='user2', password='pass2', email='user2@example.com')
+                username='user2', password='-', email='user2@example.com')
         self.invite1 = Invite.objects.create_invite(self.inviter)
         self.invite2 = Invite.objects.create_invite(self.inviter)
         self.invite3 = Invite.objects.create_invite(self.inviter)
@@ -70,3 +71,38 @@ class InviteModelTestCase(TestCase):
 
         key2 = Invite.objects.generate_key(self.inviter)
         self.assertNotEqual(key1, key2)
+
+
+class RedeemInviteFormTestCase(TestCase):
+    """
+    Test the RedeemInviteForm
+    """
+
+    def setUp(self):
+        self.inviter = User.objects.create(
+                username='user', password='-', email='user@example.com')
+        self.redeemer = User.objects.create(
+                username='redeemer', password='-',
+                email='redeemer@example.com')
+        self.invite = Invite.objects.create_invite(self.inviter)
+
+    def test_redeem_open(self):
+        form = RedeemInviteForm({'key': self.invite.key})
+        self.assertTrue(form.is_valid())
+
+    def test_redeem_redeemed_already(self):
+        self.invite.redeemer = self.inviter
+        self.invite.save()
+        form = RedeemInviteForm({'key': self.invite.key})
+        self.assertFalse(form.is_valid())
+
+    def test_redeem_expired_already(self):
+        self.invite.expires_at = timezone.now() - timedelta.resolution
+        self.invite.save()
+        form = RedeemInviteForm({'key': self.invite.key})
+        self.assertFalse(form.is_valid())
+
+    def test_invalid_keys(self):
+        self.assertFalse(RedeemInviteForm().is_valid())
+        self.assertFalse(RedeemInviteForm({'key': ''}).is_valid())
+        self.assertFalse(RedeemInviteForm({'key': 'beefcake'}).is_valid())

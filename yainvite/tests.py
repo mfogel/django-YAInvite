@@ -4,12 +4,9 @@ Tests for django-YAInvite
 
 from datetime import timedelta
 
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
-from django.core import management
-from django.core.urlresolvers import reverse
 from django.http import HttpRequest
 from django.test import TestCase
 from django.utils import timezone
@@ -177,6 +174,9 @@ class UserUnlimitedBackendTestCase(TestCase):
 
 
 class UserProfileBackendTestCase(TestCase):
+    """
+    Test the UserProfileBackend
+    """
     # TODO: fill me in
     pass
 

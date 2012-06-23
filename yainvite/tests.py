@@ -6,12 +6,15 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.core import mail
 from django.core import management
 from django.core.urlresolvers import reverse
+from django.http import HttpRequest
 from django.test import TestCase
 from django.utils import timezone
 
+from .backends import SiteBackend, UserUnlimitedBackend
 from .forms import RedeemInviteForm, SendInviteForm
 from .models import Invite
 
@@ -132,3 +135,47 @@ class SendInviteFormTestCase(TestCase):
         msg = mail.outbox[0]
         self.assertEqual(len(msg.to), 1)
         self.assertEqual(msg.to[0], self.to_addr)
+
+
+class SiteBackendTestCase(TestCase):
+    """
+    Test the SiteBackend
+    """
+
+    def setUp(self):
+        request = HttpRequest()
+        self.backend = SiteBackend(request)
+
+    def test_unlimited(self):
+        self.assertGreater(self.backend.number_invites_remaining, 0)
+        self.backend.number_invites_remaining = 0
+        self.assertGreater(self.backend.number_invites_remaining, 0)
+
+    def test_site(self):
+        self.assertEqual(self.backend.inviter, Site.objects.get_current())
+
+
+class UserUnlimitedBackendTestCase(TestCase):
+    """
+    Test the SiteBackend
+    """
+
+    def setUp(self):
+        self.user = User.objects.create(
+                username='user', password='-', email='user@example.com')
+        request = HttpRequest()
+        request.user = self.user
+        self.backend = UserUnlimitedBackend(request)
+
+    def test_unlimited(self):
+        self.assertGreater(self.backend.number_invites_remaining, 0)
+        self.backend.number_invites_remaining = 0
+        self.assertGreater(self.backend.number_invites_remaining, 0)
+
+    def test_user(self):
+        self.assertEqual(self.backend.inviter, self.user)
+
+
+class UserProfileBackendTestCase(TestCase):
+    # TODO: fill me in
+    pass

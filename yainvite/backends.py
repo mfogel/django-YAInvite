@@ -43,7 +43,7 @@ class InviteBackend(object):
 
 class UnlimitedInvitesMixin(object):
     "Mixin that allows unlimited invites to be sent"
-    the_answer = 42
+    the_answer = 100
 
     def _get_number_invites_remaining(self):
         return self.the_answer
@@ -71,7 +71,7 @@ class SiteBackend(UnlimitedInvitesMixin, InviteBackend):
     """
     A backend implementation for the following scenario:
         1. Invites come from Site objects
-        2. Everyone always has 42 invites left.
+        2. Everyone always has 100 invites left.
 
     Require settings:
         * YAINVITE_INVITER_CLASS = 'sites.Site'
@@ -92,7 +92,7 @@ class UserUnlimitedBackend(
     """
     A backend implementation for the following scenario:
         1. Invites come from User objects
-        2. Everyone always has 42 invites left.
+        2. Everyone always has 100 invites left.
 
     Requires settings.YAINVITE_INVITER_CLASS = 'auth.User'
     """

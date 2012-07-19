@@ -24,6 +24,22 @@ class InviteManager(models.Manager):
         "Is the key syntactically valid?"
         return bool(self.KEY_RE.search(invite_key))
 
+    def generate_key(self, inviter):
+        """
+        Generate a new ``Invite`` key and return it.
+
+        The key for the ``Invite`` will be a SHA1 hash, generated from:
+            * time-specific data
+            * inviter-specific data
+            * a random salt
+        """
+        payload = ''.join([
+            str(timezone.now()),
+            str(inviter),
+            sha_constructor(str(random.random())).hexdigest(),
+        ])
+        return base64.b32encode(sha_constructor(payload).digest())[:8].lower()
+
     def get_invite(self, invite_key):
         """
         Return the ``Invite`` with the given key. Avoid hitting database
@@ -38,20 +54,8 @@ class InviteManager(models.Manager):
         return invite
 
     def create_invite(self, inviter):
-        """
-        Create an ``Invite`` and return it.
-
-        The key for the ``Invite`` will be a SHA1 hash, generated from:
-            * time-specific data
-            * inviter-specific data
-            * a random salt
-        """
-        payload = ''.join([
-            str(timezone.now()),
-            str(inviter),
-            sha_constructor(str(random.random())).hexdigest(),
-        ])
-        key = base64.b32encode(sha_constructor(payload).digest())[:8].lower()
+        "Create an ``Invite`` and return it"
+        key = self.generate_key(inviter)
         return self.create(inviter=inviter, key=key)
 
 

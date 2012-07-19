@@ -81,6 +81,12 @@ Available settings:
 
     Defaults to ``django.contrib.auth.forms.UserCreationForm``
 
+:``YAINVITE_REDIRECT_NEW_USER_TO``:
+    Name of url to redirect new user to after they've redeemed their
+    invite.
+
+    Defaults to ``yainvite_redeemed``
+
 
 Dependencies
 ============

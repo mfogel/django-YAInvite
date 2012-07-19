@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse_lazy
 from django.utils.decorators import method_decorator
@@ -65,8 +66,9 @@ class RedeemInviteView(MultiFormView):
 
     def valid_all(self, forms):
         "Redeem the invite"
-        new_user = forms['user'].save()
+        new_user = forms['user'].save_and_authenticate()
         forms['invite'].redeem(new_user)
+        login(self.request, new_user)
 
 
 class InviteRedeemedView(TemplateView):

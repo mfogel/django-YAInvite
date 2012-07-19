@@ -22,7 +22,7 @@ class YAInviteConf(AppConf):
     INVITER_DB_TABLE = None
 
     # form class to use when redeeming an Invite
-    USER_CREATION_FORM = 'django.contrib.auth.forms.UserCreationForm'
+    USER_CREATION_FORM = 'yainvite.forms.UserCreationForm'
 
     def configure(self):
         data = self.configured_data

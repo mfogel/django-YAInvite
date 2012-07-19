@@ -1,5 +1,8 @@
 from django import forms
 from django.conf import settings
+from django.contrib.auth import authenticate
+from django.contrib.auth.forms import (
+        UserCreationForm as DjangoUserCreationForm)
 from django.contrib.sites.models import Site
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
@@ -50,3 +53,18 @@ class RedeemInviteForm(forms.Form):
         invite.redeemer = user
         invite.save()
         return invite
+
+
+class UserCreationForm(DjangoUserCreationForm):
+    """
+    Identical to default django user creation form, but also
+    provides 'save_and_authenticate' method that not only
+    saves the new User object, but also authenticates them
+    (so that the View can log them in).
+    """
+
+    def save_and_authenticate(self):
+        self.save()
+        return authenticate(
+                username=self.cleaned_data['email'],
+                password=self.cleaned_data['password'])

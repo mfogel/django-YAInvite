@@ -113,6 +113,7 @@ class SendInviteFormTestCase(TestCase):
     Test the SendInviteForm
     """
 
+    urls = 'yainvite.urls'
     to_addr = 'test@example.com'
 
     def setUp(self):

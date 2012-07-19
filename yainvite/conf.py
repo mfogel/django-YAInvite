@@ -24,6 +24,9 @@ class YAInviteConf(AppConf):
     # form class to use when redeeming an Invite
     USER_CREATION_FORM = 'yainvite.forms.UserCreationForm'
 
+    # name of url to redirect new user to after they've redeemed their invite
+    REDIRECT_NEW_USER_TO = 'yainvite_redeemed'
+
     def configure(self):
         data = self.configured_data
         if not data['INVITER_DB_TABLE']:

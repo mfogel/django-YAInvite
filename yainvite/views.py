@@ -59,7 +59,7 @@ class RedeemInviteView(MultiFormView):
         'invite': MultiFormView.form(RedeemInviteForm),
     }
     template_name = 'yainvite/redeem.html'
-    success_url = reverse_lazy('yainvite_redeemed')
+    success_url = reverse_lazy(settings.YAINVITE_REDIRECT_NEW_USER_TO)
 
     def get_initial_invite(self):
         return {'key': self.kwargs.get('invite_key', '')}

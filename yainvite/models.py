@@ -73,7 +73,7 @@ class Invite(models.Model):
 
     )
     inviter = models.ForeignKey(settings.YAINVITE_INVITER_CLASS,
-            related_name='invite_sent_set')
+            related_name='invite_created_set')
     redeemer = models.ForeignKey(User, related_name='invite_redeemed_set',
             blank=True, null=True)
 

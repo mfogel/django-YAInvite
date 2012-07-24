@@ -63,7 +63,7 @@ class UserCreationForm(DjangoUserCreationForm):
     (so that the View can log them in).
     """
 
-    def save_and_authenticate(self):
+    def save_and_authenticate(self, **kwargs):
         self.save()
         return authenticate(
                 username=self.cleaned_data['email'],

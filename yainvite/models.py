@@ -89,7 +89,7 @@ class Invite(models.Model):
 
     def is_expired(self):
         "Has this Invite expired?"
-        return timezone.now() > self.expires_at
+        return timezone.now() > self.expires_at if self.expires_at else False
     is_expired.boolean = True
 
     def is_open(self):

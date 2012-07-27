@@ -30,7 +30,7 @@ class Migration(SchemaMigration):
             ('key', self.gf('django.db.models.fields.CharField')(max_length=8, db_index=True)),
             ('created_at', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True)),
             ('expires_at', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-            ('inviter', self.gf('django.db.models.fields.related.ForeignKey')(related_name='invite_sent_set', to=orm[settings.YAINVITE_INVITER_CLASS])),
+            ('inviter', self.gf('django.db.models.fields.related.ForeignKey')(related_name='invite_created_set', to=orm[settings.YAINVITE_INVITER_CLASS])),
             ('redeemer', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='invite_redeemed_set', null=True, to=orm['auth.User'])),
         ))
         db.send_create_signal('yainvite', ['Invite'])
@@ -90,7 +90,7 @@ class Migration(SchemaMigration):
             'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True'}),
             'expires_at': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2012, 6, 26, 0, 0)', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'inviter': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'invite_sent_set'", 'to': "orm['{}']".format(settings.YAINVITE_INVITER_CLASS)}),
+            'inviter': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'invite_created_set'", 'to': "orm['{}']".format(settings.YAINVITE_INVITER_CLASS)}),
             'key': ('django.db.models.fields.CharField', [], {'max_length': '8', 'db_index': 'True'}),
             'redeemer': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'invite_redeemed_set'", 'null': 'True', 'to': "orm['auth.User']"})
         }

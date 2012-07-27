@@ -73,7 +73,7 @@ class Invite(models.Model):
 
     )
     inviter = models.ForeignKey(settings.YAINVITE_INVITER_CLASS,
-            related_name='invite_sent_set')
+            related_name='invite_created_set')
     redeemer = models.ForeignKey(User, related_name='invite_redeemed_set',
             blank=True, null=True)
 
@@ -89,7 +89,7 @@ class Invite(models.Model):
 
     def is_expired(self):
         "Has this Invite expired?"
-        return timezone.now() > self.expires_at
+        return timezone.now() > self.expires_at if self.expires_at else False
     is_expired.boolean = True
 
     def is_open(self):

@@ -66,9 +66,12 @@ class RedeemInviteView(MultiFormView):
 
     def valid_all(self, forms):
         "Redeem the invite"
-        new_user = forms['user'].save_and_authenticate(request=self.request)
-        forms['invite'].redeem(new_user)
-        login(self.request, new_user)
+        if settings.YAINVITE_USER_AUTO_LOGIN:
+            user = forms['user'].save_and_authenticate(request=self.request)
+            login(self.request, user)
+        else:
+            user = forms['user'].save()
+        forms['invite'].redeem(user)
 
 
 class InviteRedeemedView(TemplateView):

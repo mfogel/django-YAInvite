@@ -87,6 +87,11 @@ Available settings:
 
     Defaults to ``yainvite_redeemed``
 
+:``YAINVITE_USER_AUTO_LOGIN``:
+    Should we automatically log the user in after they redeem an invite?
+
+    Defaults to False.
+
 
 Dependencies
 ============

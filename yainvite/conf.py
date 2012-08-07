@@ -27,6 +27,9 @@ class YAInviteConf(AppConf):
     # name of url to redirect new user to after they've redeemed their invite
     REDIRECT_NEW_USER_TO = 'yainvite_redeemed'
 
+    # should we automatically log the user in when they redeem an invite?
+    USER_AUTO_LOGIN = False
+
     def configure(self):
         data = self.configured_data
         if not data['INVITER_DB_TABLE']:
